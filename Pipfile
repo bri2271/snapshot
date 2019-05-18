@@ -9,6 +9,7 @@ pylint = "*"
 
 [packages]
 boto3 = "*"
+click = "*"
 
 [requires]
 python_version = "3.7"
