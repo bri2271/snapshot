@@ -13,4 +13,8 @@ Snapshot uses the configuration file created by AWS CLI.
 
 ## Running 
 
-`pipenv run python snapshot.py`
+`pipenv run python snapshot.py <command> <sub commands> <--backup=Yes `
+
+*command* is instances, volumes, or snapshots
+*sub command* depends on command
+*backup* is Tag Backup = Yes
