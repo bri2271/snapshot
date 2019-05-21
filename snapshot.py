@@ -1,4 +1,5 @@
 import boto3
+import botocore
 import click
 
 session = boto3.Session(profile_name='brianm')
@@ -48,7 +49,9 @@ def snapshots():
 @snapshots.command('list')
 @click.option('--backup', default=None, 
     help='Only instances for backup (tag Backup:<name>)')
-def list_snapshots(backup):
+@click.option('--all', 'list_all', default=False, is_flag=True,
+    help='List all snapshots, not just the most recent')
+def list_snapshots(backup,list_all):
     "List EC2 snapshots"
 
     instances = filter_instances(backup)
@@ -64,6 +67,8 @@ def list_snapshots(backup):
                     s.progress,
                     s.start_time.strftime('%c')
                 )))
+
+                if s.state == 'completed' and not list_all: break
     return
 
 @cli.group('instances')
@@ -86,6 +91,7 @@ def create_snapshots(backup):
         for v in i.volumes.all():
             print('Creating snapshot of {0}'.format(v.id))
             v.create_snapshot(Description='Created by Python Snapshot')
+            # v.create_snapshot.add_tags({'Key' : 'backup' , 'Value' : 'Yes'})
 
         print('Starting {0}...'.format(i.id))
 
@@ -127,7 +133,11 @@ def stop_instances(backup):
 
     for i in instances:
         print('Stopping {0}...'.format(i.id))
-        i.stop()
+        try:
+            i.stop()
+        except botocore.exceptions.ClientError as e:
+            print('Could not stop {0}. '.format(i.id) + str(e))
+            continue
 
     return
 @instances.command('start')
@@ -140,7 +150,11 @@ def start_instances(backup):
 
     for i in instances:
         print('Starting {0}...'.format(i.id))
-        i.start()
+        try:
+            i.start()
+        except botocore.exceptions.ClientError as e:
+            print('Could not start {0}. '.format(i.id) + str(e))
+            continue
 
     return
 
