@@ -15,6 +15,10 @@ def filter_instances(backup):
         instances = ec2.instances.all()
 
     return instances
+
+def has_pending_snapshot(volume):
+    snapshots = list(volume.snapshots.all())
+    return snapshots and snapshots[0].state == 'pending'
 @click.group()
 def cli():
     """Commands for cli"""
@@ -88,7 +92,12 @@ def create_snapshots(backup):
 
         i.stop()
         i.wait_until_stopped()
+
         for v in i.volumes.all():
+            if has_pending_snapshot(v):
+                print(' Skipping {0}, snapshot already in progress'.format(v.id))
+                continue
+
             print('Creating snapshot of {0}'.format(v.id))
             v.create_snapshot(Description='Created by Python Snapshot')
             # v.create_snapshot.add_tags({'Key' : 'backup' , 'Value' : 'Yes'})
