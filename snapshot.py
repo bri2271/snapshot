@@ -70,8 +70,7 @@ def list_snapshots(backup):
 def instances():
     """Commands for instances"""
 
-@instances.command('snapshot', 
-    help='Create snaphots of all volumes')
+@instances.command('snapshot')
 @click.option('--backup', default=None, 
     help='Only instances for backup (tag Backup:<name>)')
 def create_snapshots(backup):
@@ -80,11 +79,22 @@ def create_snapshots(backup):
     instances = filter_instances(backup)
 
     for i in instances:
+        print('Stopping {0}...'.format(i.id))
+
+        i.stop()
+        i.wait_until_stopped()
         for v in i.volumes.all():
             print('Creating snapshot of {0}'.format(v.id))
             v.create_snapshot(Description='Created by Python Snapshot')
-    return
 
+        print('Starting {0}...'.format(i.id))
+
+        i.start()
+        i.wait_until_running()
+
+    print('Jobs Done!')
+    
+    return
 
 @instances.command('list')
 @click.option('--backup', default=None, 
