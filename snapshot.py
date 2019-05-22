@@ -99,9 +99,8 @@ def create_snapshots(backup):
                 continue
 
             print('Creating snapshot of {0}'.format(v.id))
-            v.create_snapshot(Description='Created by Python Snapshot')
-            # v.create_snapshot.add_tags({'Key' : 'backup' , 'Value' : 'Yes'})
-
+            v.create_snapshot(Description='Created by Python Snapshot'),
+                        
         print('Starting {0}...'.format(i.id))
 
         i.start()
